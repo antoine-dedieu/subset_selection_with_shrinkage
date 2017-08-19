@@ -4,7 +4,7 @@
 
 ## Algorithms
 
-### Our approach
+### Our framework
 
 We consider the regularized best subset estimator defined as 
 ```
