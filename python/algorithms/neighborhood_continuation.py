@@ -114,7 +114,8 @@ def Lasso_Ridge_path(type_penalization, X, y, llambda_list):
 
 #---Result
     betas_Lasso_Ridge  = [] 
-    N,P = X.shape
+    N,P  = X.shape
+    beta = np.zeros(P)
 
 #---Compute SVD once for Lasso with alpha=0 and Ridge 
     U, d, V     = np.linalg.svd(X, full_matrices=False)
@@ -130,7 +131,10 @@ def Lasso_Ridge_path(type_penalization, X, y, llambda_list):
                 ls  = Lasso(alpha=llambda/float(N), max_iter=100000)
                 ls.fit(X, y)
                 beta  = ls.coef_
-                
+            
+            elif type_penalization == 'l2':
+                beta, _ = DFO('l2', X, y, P, llambda, beta_start=beta)
+
             elif type_penalization == 'l2^2':
                 diag    = d/(d**2 + 2*llambda)
                 beta    = np.dot(V.T, np.dot(np.diag(diag), UTy)) #Ridge solution with SVD: http://statweb.stanford.edu/~tibs/sta305files/Rudyregularization.pdf

@@ -7,6 +7,7 @@ from simulate_data import *
 
 sys.path.append('../algorithms')
 from neighborhood_continuation import *
+from MIO import *
 
 
 
@@ -31,5 +32,14 @@ threshold_CV = 1e-3
 	
 ## First round
 is_first_round = True
-best_betas_l1, train_errors_list_l1, alpha_list_l1, betas_Lasso = neighborhood_continuation('l1',   X, y_train, K_list, N_lambda, is_first_round, threshold_CV)
-best_betas_l2, train_errors_list_l2, alpha_list_l2, betas_Ridge = neighborhood_continuation('l2^2', X, y_train, K_list, N_lambda, is_first_round, threshold_CV)
+best_betas_l1,   train_errors_list_l1,   alpha_list_l1,   betas_Lasso = neighborhood_continuation('l1',   X, y_train, K_list, N_lambda, is_first_round, threshold_CV)
+best_betas_l2,   train_errors_list_l2,   alpha_list_l2,   _           = neighborhood_continuation('l2',   X, y_train, K_list, N_lambda, is_first_round, threshold_CV)
+best_betas_l2_2, train_errors_list_l2_2, alpha_list_l2_2, betas_Ridge = neighborhood_continuation('l2^2', X, y_train, K_list, N_lambda, is_first_round, threshold_CV)
+
+
+
+## MIO 
+MIO_L0_LQ('l1',   X, y_train, 7, 0.1, time_limit=30)
+MIO_L0_LQ('l2',   X, y_train, 7, 0.1, time_limit=30)
+MIO_L0_LQ('l2^2', X, y_train, 7, 0.1, time_limit=30)
+

@@ -3,6 +3,8 @@ from   sklearn.linear_model import LinearRegression
 from   sklearn.linear_model import Lasso 
 from   sklearn.linear_model import Ridge 
 
+import DFO as DFO
+
 
 # Support functions for the Discrete First Order (DFO) algorithm
 
@@ -59,8 +61,10 @@ def soft_thresholding_l2_2(u, llambda):
 
 def solve_restricted_problem(type_penalization, X, y, llambda, beta):
 
-#TYPE PENALIZATION: type of regularization: 'l1', 'l2', 'l2XB'
-#BETA             : current estimator with support of size K
+# TYPE PENALIZATION: type of regularization: 'l1', 'l2', 'l2^2'
+    # - for 'l1' or 'l2^2', we use Lasso or Ridge solved with scikit learn
+    # - for 'l2', we use a soft thresholding gradient descent on the support
+#BETA              : current estimator with support of size K
     
     N,P     = X.shape
     support = np.where(beta!=0)[0]
@@ -74,21 +78,28 @@ def solve_restricted_problem(type_penalization, X, y, llambda, beta):
         
 
     #---Solve restricted problem
-        if llambda == 0:
-            estimator = LinearRegression()
-        else:
-        ### CAREFULL : coefficients
-            dict_estimator = {'l1':  Lasso(alpha=llambda/float(N)),#http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html#sklearn.linear_model.Lasso
-                              'l2^2': Ridge(alpha=2.*llambda, fit_intercept=False, solver='svd')} #http://scikit-learn.org/stable/modules/linear_model.html#ridge-regression
-            estimator = dict_estimator[type_penalization]
 
-        estimator.fit(X_support, y)
+        if type_penalization == 'l2':
+        ### FOR L2 CALL DFO WITHOUT SOLVING ON SUPPORT
+            beta_support, _ = DFO.DFO('l2', X_support, y, len(support), llambda, beta_start=beta[support], solve_support=False)
+
+        else:
+            if llambda == 0:
+                estimator = LinearRegression()
+            
+            elif type_penalization in {'l1', 'l2^2'}:
+            ### CAREFULL : coefficients
+                dict_estimator = {'l1':  Lasso(alpha=llambda/float(N)),#http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html#sklearn.linear_model.Lasso
+                                  'l2^2': Ridge(alpha=2.*llambda, fit_intercept=False, solver='svd')} #http://scikit-learn.org/stable/modules/linear_model.html#ridge-regression
+                estimator = dict_estimator[type_penalization]
+
+            estimator.fit(X_support, y)
+            beta_support  = np.array(estimator.coef_)
+            
 
 
     #---Compute loss
-        beta_support  = np.array(estimator.coef_)
-        beta[support] = beta_support
-
+        beta[support]     = beta_support
         obj_val           = 0.5*np.linalg.norm(y - np.dot(X_support, beta_support) )**2
         dict_penalization = {'l1': np.sum(np.abs(beta_support)), 'l2': np.linalg.norm(beta_support), 'l2^2': np.linalg.norm(beta_support)**2}
         obj_val          += llambda*dict_penalization[type_penalization]
@@ -99,9 +110,6 @@ def solve_restricted_problem(type_penalization, X, y, llambda, beta):
         obj_val = 0.5*np.linalg.norm(y)**2
 
     return beta, obj_val
-
-
-
 
 
 

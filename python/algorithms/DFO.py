@@ -1,22 +1,24 @@
 import numpy as np
-from   aux_DFO import *
+from aux_DFO import *
 
 
 # Implements the Discrete First Order (DFO) algorithm for l1, l2 or l2^2 regularizations
 
 
 
-def DFO(type_penalization, X, y, K, llambda, beta_start=[], threshold_CV=1e-3, XTy=[], mu_max=0):
+def DFO(type_penalization, X, y, K, llambda, beta_start=[], threshold_CV=1e-3, XTy=[], mu_max=0, solve_support=True):
     
 # TYPE PENALIZATION: type of regularization: 'l1', 'l2', 'l2^2'
 # K, LLAMBDA       : sparsity and regularization parameters
 # BETA_START       : warm start (or [])
 # THRESHOLD_CV     : convergence threshold
+# SOLVE_SUPPORT    : false only when solving on support for l2
 
 
 #---Parameters
     N,P        = X.shape
     N_iter_max = 1e3                #maximum number of iterations
+    obj_val    = 0
 
     if np.array(XTy).shape[0] == 0: XTy = np.dot(X.T, y)
 
@@ -53,7 +55,8 @@ def DFO(type_penalization, X, y, K, llambda, beta_start=[], threshold_CV=1e-3, X
 
 
 #---Solve restricted problem in the support
-    beta, obj_val = solve_restricted_problem(type_penalization, X, y, llambda, beta)
+    if solve_support: beta, obj_val = solve_restricted_problem(type_penalization, X, y, llambda, beta)
+    
     return beta, obj_val
 
 
