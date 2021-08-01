@@ -12,12 +12,13 @@ from DFO import *
 def MIO_L0_LQ(type_penalization, X, y, K, llambda, beta_start=[], time_limit=60, Big_M=0):
 
 # Function arguments:    
-#TYPE PENALIZATION: which type of regularization to use in the penalty/objective: 'l1', 'l2', 'l2^2'
+#type_penalization: which type of regularization to use in the penalty/objective: 'l1', 'l2', 'l2^2'
     # -if 'l1' or 'l2^2', we write the problem as a mixed integer quadratic optimization problem
     # -if 'l2', we consider a mixed integer second order conic programming formulation. 
 
-#BETA_START       : [optional] possible warm start obtained with our discrete first order (DFO) methods. Supplying this can speed up the overall computation time. 
-#BIG_M            : [optimal] bound on the magnitudes of the regression coefficients. If a reliable bound is not available to the user, we recommend using "Big_M=0", 
+#time_limit       : how long should the MIP solver run? We took time_limit=60 as a placeholder only. We recommend using ~30 mins for p~1000.    
+#beta_start       : [optional] possible warm start obtained with our discrete first order (DFO) methods. Supplying this can speed up the overall computation time. 
+#Big_M            : [optional] bound on the magnitudes of the regression coefficients. If a reliable bound is not available to the user, we recommend using "Big_M=0", 
 #                   so that the algorithm can compute a BigM value based on running a DFO method prior to running the MIO-algorithm.  
 
 
