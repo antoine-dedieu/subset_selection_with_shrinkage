@@ -3,39 +3,45 @@ from gurobipy import *
 
 from DFO import *
 
-
-# Solves the best subset regularized prolem to optimality 
-
+# Solves the best subset regularized prolem to optimality.
+# This script formulates our L0-LQ estimator as a mixed integer optimization problem, which can be solved to optimality via branch-and-bound/cut. We use Gurobi's MIO solver. 
+# Please make sure that you can call Gurobi's solver from your machine.
+# In addition to the L0-LQ estimator, we also offer the option of computing a regularized best-subset problem where the regularizer is the ridge penalty (i.e., l2^2).
 
 
 def MIO_L0_LQ(type_penalization, X, y, K, llambda, beta_start=[], time_limit=60, Big_M=0):
 
-#TYPE PENALIZATION: type of regularization: 'l1', 'l2', 'l2^2'
-    # -if 'l1' or 'l2^2', we write the problem as a MIO
-    # -if 'l2', we consider its MISOCP formulation
+# Function arguments:    
+#TYPE PENALIZATION: which type of regularization to use in the penalty/objective: 'l1', 'l2', 'l2^2'
+    # -if 'l1' or 'l2^2', we write the problem as a mixed integer quadratic optimization problem
+    # -if 'l2', we consider a mixed integer second order conic programming formulation. 
 
-#BETA_START       : possible warm start obtained with the prior neighborhood continuation
-#BIG_M            : optional bound for infinite norm, usually returned with the DFO algorithm
+#BETA_START       : [optional] possible warm start obtained with our discrete first order (DFO) methods. Supplying this can speed up the overall computation time. 
+#BIG_M            : [optimal] bound on the magnitudes of the regression coefficients. If a reliable bound is not available to the user, we recommend using "Big_M=0", 
+#                   so that the algorithm can compute a BigM value based on running a DFO method prior to running the MIO-algorithm.  
 
-    MIO_L0_LQ = Model("MIO")
+
+# Setup the MIO model in Gurobi/Python
+
+MIO_L0_LQ = Model("MIO")
     MIO_L0_LQ.setParam('TimeLimit', time_limit)
     
     N,P = X.shape
     
-#---Variables 
+#---Define the decision variables 
     beta     = np.array([MIO_L0_LQ.addVar(lb=-GRB.INFINITY, name="beta_"+str(i)) for i in range(P)])
     z        = [MIO_L0_LQ.addVar(0.0, 1.0, 1.0, GRB.BINARY, name="z_"+str(i)) for i in range(P)]
     obj_val  = MIO_L0_LQ.addVar(name='obj_val')
     
     MIO_L0_LQ.update()   
 
-    # For later use
+    # Setting up the squared residual component of the objective, to be used later to define our objective function
     aux_loss = quicksum((y[i] - quicksum(X[i,k]*beta[k] for k in range(P)))*(y[i] - quicksum(X[i,k]*beta[k] for k in range(P))) for i in range(N))
 
 
 #---Big M constraint
     
-    ##### CALL DFO #####
+    ##### CALL DFO to estimate a BigM value #####
     if Big_M == 0:
         if len(beta_start) == 0: beta_start, _ = DFO(type_penalization, X, y, K, llambda)
         Big_M = 2*np.max(np.abs(beta_start))
@@ -50,7 +56,7 @@ def MIO_L0_LQ(type_penalization, X, y, K, llambda, beta_start=[], time_limit=60,
     MIO_L0_LQ.addConstr(quicksum(z) <= K, "sparsity")
      
 
-#---Case l1
+#---Case l1 [type of penalty function in the objective]
     if type_penalization == 'l1': 
         abs_beta = np.array([MIO_L0_LQ.addVar(lb=0, name="abs_beta_"+str(i)) for i in range(P)])
         MIO_L0_LQ.update()
@@ -59,7 +65,7 @@ def MIO_L0_LQ(type_penalization, X, y, K, llambda, beta_start=[], time_limit=60,
         MIO_L0_LQ.addConstr(abs_beta[i] >= -beta[i], name='abs_beta_inf_'+str(i)) 
 
 
-#---Case l2 -> MISCOCP
+#---Case l2 [type of penalty function in the objective] -> this leads to a SOCP constraint
     elif type_penalization == 'l2': 
         u = MIO_L0_LQ.addVar(lb=0, name="u")
         v = MIO_L0_LQ.addVar(lb=0, name="v")
@@ -69,7 +75,7 @@ def MIO_L0_LQ(type_penalization, X, y, K, llambda, beta_start=[], time_limit=60,
         MIO_L0_LQ.addConstr(quicksum(beta[i]*beta[i] for i in range(P)) <= v, name='v_constraint') 
 
 
-#---Objective value
+#---Setting up the Objective value of the problem
     loss = u if type_penalization == 'l2' else aux_loss
     
     if type_penalization == 'l1':
@@ -92,7 +98,7 @@ def MIO_L0_LQ(type_penalization, X, y, K, llambda, beta_start=[], time_limit=60,
             if type_penalization==1: abs_beta[i].start = abs(beta_start[i])
     
     
-#---Solve
+#---Solve the Model that we set up
     MIO_L0_LQ.optimize()
     beta_MIO = [beta[i].x for i in range(P)]
     
