@@ -6,7 +6,7 @@ from   sklearn.linear_model import Ridge
 import DFO as DFO
 
 
-# Support functions for the Discrete First Order (DFO) algorithm
+## Supporting functions for the Discrete First Order (DFO) algorithm
 
 
 ############## HIGHEST EIGENVALUE OF XTX ################
