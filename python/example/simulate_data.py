@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-
+# Script to generate synthetic datasets. 
 # Generates the data: we first simulate a N*P design matrix with each row being a multivariate normal with mean real_beta and covariance Sigma
     # -if type_Sigma == 1, real_beta = 1 for k0 equi-spaced coefficients and Sigma_i,j = rho^|i-j|
     # -if type_Sigma == 2, real_beta = 1 for the first k0 coefficients   and Sigma_i,j = rho
@@ -34,7 +34,7 @@ def simulate_data(type_Sigma, N, P, k0, rho, SNR, seed_X=-1, seed_eps=-1):
     if seed_eps == -1: seed_eps= random.randint(0,1000)    
 
 
-#-------------------------Beta---------------------------
+#-------------------------Beta (regression coefficients)---------------------------
     
     real_beta = np.zeros(P)
 
@@ -44,7 +44,7 @@ def simulate_data(type_Sigma, N, P, k0, rho, SNR, seed_X=-1, seed_eps=-1):
     real_beta[idx] = np.ones(k0)
 
 
-#-------------------------X-----------------------------
+#-------------------------X (covariates)-----------------------------
     
     np.random.seed(seed=seed_X)
 
@@ -66,7 +66,7 @@ def simulate_data(type_Sigma, N, P, k0, rho, SNR, seed_X=-1, seed_eps=-1):
         
 
 
-#-------------------------Eps, y---------------------------
+#-------------------------Eps (Errors), y (response)---------------------------
 
     np.random.seed(seed=seed_eps)
     X_real_beta = np.dot(X, real_beta)
