@@ -29,7 +29,7 @@ The Discrete First Order (DFO) algorithm written in Python can be used as a stan
 The MIO formulation is solved with Gurobi's mixed integer programming solver. 
 
 ## Demo Example
-To see how to use our algorithm on a dataset, please see the example.py file located at 
+To see a demo example on how to use our algorithm, please refer to example.py file located at 
 
 python/example/example.py ([link](https://github.com/antoine-dedieu/subset_selection_with_shrinkage/blob/master/python/example/example.py))
 
