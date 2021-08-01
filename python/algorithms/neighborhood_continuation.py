@@ -5,10 +5,10 @@ import time
 
 from DFO import *
 
+## Supporting functions for the DFO algorithm. 
 
-############## NEIGHBORHOOD CONTINUATION ALGORITHM ################
-
-
+########## NEIGHBORHOOD CONTINUATION ALGORITHM ################
+# Implements a neighborhood continuation method to make use of good warm-starts available from neighboring tuning parameters.
 # Cycles through two sequences of parameters to produce a high-quality near-optimal regularization surface
 
 def neighborhood_continuation(type_penalization, X, y, K_list, N_lambda, is_first_round=False, threshold_CV=1e-3, XTy=[], mu_max=0, betas_list=[], obj_vals_list=[], llambda_list=[], use_random_swap=False):
@@ -22,7 +22,6 @@ def neighborhood_continuation(type_penalization, X, y, K_list, N_lambda, is_firs
 # LLAMBDA_LIST     : list of coefficients
 # USE_RANDOM_SWAP  : boolean which indicates whether we use or not the random swaps
 # THRESHOLD_CV     : convergence threshold for DFO algorithm
-
 
 
 #---Parameters
@@ -94,8 +93,6 @@ def neighborhood_continuation(type_penalization, X, y, K_list, N_lambda, is_firs
                                                      
     print 'Time for neighborhood continuation algorithm with '+type_penalization+' regularization: '+str(round(time.time()-start,2))
     return betas_list, obj_vals_list, llambda_list, betas_Lasso_Ridge
-
-
 
 
 
