@@ -14,7 +14,7 @@ from MIO import *
 
 ## Generate synthetic data. Simulation parameters
 
-# Type of covariance matrix of covariates [see paper for details]
+# Type of covariance matrix of covariates [see simulate_data.py file in the same folder for details] (Another option for type_Sigma = 2)
 type_Sigma = 1
 
 N, P = 50, 100
